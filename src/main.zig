@@ -9,75 +9,129 @@ const queries = [_]Query{
     .{
         .name = "list-mentors",
         .sql =
-        \\""\
-        SELECT id,
-               full_name AS mentor,
-               timezone,
-               max_sessions_per_week,
-               active
-          FROM mentor_coverage_planner.mentors
-      ORDER BY active DESC, full_name;
-        \\""\
+        \\SELECT id,
+        \\       full_name AS mentor,
+        \\       timezone,
+        \\       max_sessions_per_week,
+        \\       active
+        \\  FROM mentor_coverage_planner.mentors
+        \\ ORDER BY active DESC, full_name;
     },
     .{
         .name = "list-blocks",
         .sql =
-        \\""\
-        SELECT id,
-               CASE day_of_week
-                    WHEN 0 THEN 'Sun'
-                    WHEN 1 THEN 'Mon'
-                    WHEN 2 THEN 'Tue'
-                    WHEN 3 THEN 'Wed'
-                    WHEN 4 THEN 'Thu'
-                    WHEN 5 THEN 'Fri'
-                    WHEN 6 THEN 'Sat'
-               END AS day,
-               to_char(start_time, 'HH24:MI') AS start_time,
-               to_char(end_time, 'HH24:MI') AS end_time,
-               coverage_type,
-               COALESCE(notes, '') AS notes
-          FROM mentor_coverage_planner.coverage_blocks
-      ORDER BY day_of_week, start_time;
-        \\""\
+        \\SELECT id,
+        \\       CASE day_of_week
+        \\            WHEN 0 THEN 'Sun'
+        \\            WHEN 1 THEN 'Mon'
+        \\            WHEN 2 THEN 'Tue'
+        \\            WHEN 3 THEN 'Wed'
+        \\            WHEN 4 THEN 'Thu'
+        \\            WHEN 5 THEN 'Fri'
+        \\            WHEN 6 THEN 'Sat'
+        \\       END AS day,
+        \\       to_char(start_time, 'HH24:MI') AS start_time,
+        \\       to_char(end_time, 'HH24:MI') AS end_time,
+        \\       coverage_type,
+        \\       COALESCE(notes, '') AS notes
+        \\  FROM mentor_coverage_planner.coverage_blocks
+        \\ ORDER BY day_of_week, start_time;
     },
     .{
         .name = "assignments",
         .sql =
-        \\""\
-        SELECT m.full_name AS mentor,
-               CASE b.day_of_week
-                    WHEN 0 THEN 'Sun'
-                    WHEN 1 THEN 'Mon'
-                    WHEN 2 THEN 'Tue'
-                    WHEN 3 THEN 'Wed'
-                    WHEN 4 THEN 'Thu'
-                    WHEN 5 THEN 'Fri'
-                    WHEN 6 THEN 'Sat'
-               END AS day,
-               to_char(b.start_time, 'HH24:MI') AS start_time,
-               to_char(b.end_time, 'HH24:MI') AS end_time,
-               a.status,
-               a.priority
-          FROM mentor_coverage_planner.assignments a
-          JOIN mentor_coverage_planner.mentors m ON m.id = a.mentor_id
-          JOIN mentor_coverage_planner.coverage_blocks b ON b.id = a.block_id
-      ORDER BY b.day_of_week, b.start_time, a.priority DESC;
-        \\""\
+        \\SELECT m.full_name AS mentor,
+        \\       CASE b.day_of_week
+        \\            WHEN 0 THEN 'Sun'
+        \\            WHEN 1 THEN 'Mon'
+        \\            WHEN 2 THEN 'Tue'
+        \\            WHEN 3 THEN 'Wed'
+        \\            WHEN 4 THEN 'Thu'
+        \\            WHEN 5 THEN 'Fri'
+        \\            WHEN 6 THEN 'Sat'
+        \\       END AS day,
+        \\       to_char(b.start_time, 'HH24:MI') AS start_time,
+        \\       to_char(b.end_time, 'HH24:MI') AS end_time,
+        \\       a.status,
+        \\       a.priority
+        \\  FROM mentor_coverage_planner.assignments a
+        \\  JOIN mentor_coverage_planner.mentors m ON m.id = a.mentor_id
+        \\  JOIN mentor_coverage_planner.coverage_blocks b ON b.id = a.block_id
+        \\ ORDER BY b.day_of_week, b.start_time, a.priority DESC;
     },
     .{
         .name = "coverage-summary",
         .sql =
-        \\""\
-        SELECT day_label AS day,
-               to_char(start_time, 'HH24:MI') AS start_time,
-               to_char(end_time, 'HH24:MI') AS end_time,
-               confirmed_count,
-               pending_count,
-               total_needed
-          FROM mentor_coverage_planner.coverage_summary
-      ORDER BY day_of_week, start_time;
-        \\""\
+        \\SELECT day_label AS day,
+        \\       to_char(start_time, 'HH24:MI') AS start_time,
+        \\       to_char(end_time, 'HH24:MI') AS end_time,
+        \\       confirmed_count,
+        \\       pending_count,
+        \\       total_needed
+        \\  FROM mentor_coverage_planner.coverage_summary
+        \\ ORDER BY day_of_week, start_time;
+    },
+    .{
+        .name = "coverage-gaps",
+        .sql =
+        \\SELECT day_label AS day,
+        \\       to_char(start_time, 'HH24:MI') AS start_time,
+        \\       to_char(end_time, 'HH24:MI') AS end_time,
+        \\       confirmed_count,
+        \\       pending_count,
+        \\       total_needed,
+        \\       remaining_needed,
+        \\       confirmed_pct,
+        \\       gap_status
+        \\  FROM mentor_coverage_planner.coverage_gaps
+        \\ ORDER BY day_of_week, start_time;
+    },
+    .{
+        .name = "followup-queue",
+        .sql =
+        \\SELECT mentor,
+        \\       day,
+        \\       start_time,
+        \\       end_time,
+        \\       coverage_type,
+        \\       status,
+        \\       priority,
+        \\       last_contacted,
+        \\       days_since_contact,
+        \\       followup_status
+        \\  FROM mentor_coverage_planner.followup_queue;
+    },
+    .{
+        .name = "mentor-load",
+        .sql =
+        \\SELECT m.full_name AS mentor,
+        \\       m.max_sessions_per_week,
+        \\       COUNT(a.id) FILTER (WHERE a.status = 'confirmed') AS confirmed_assignments,
+        \\       COUNT(a.id) FILTER (WHERE a.status IN ('pending', 'proposed')) AS pending_assignments,
+        \\       GREATEST(
+        \\           m.max_sessions_per_week - COUNT(a.id) FILTER (WHERE a.status = 'confirmed'),
+        \\           0
+        \\       ) AS remaining_capacity
+        \\  FROM mentor_coverage_planner.mentors m
+        \\  LEFT JOIN mentor_coverage_planner.assignments a ON a.mentor_id = m.id
+        \\ WHERE m.active = TRUE
+        \\ GROUP BY m.id, m.full_name, m.max_sessions_per_week
+        \\ ORDER BY remaining_capacity DESC, m.full_name;
+    },
+    .{
+        .name = "followup-queue",
+        .sql =
+        \\SELECT mentor,
+        \\       day,
+        \\       start_time,
+        \\       end_time,
+        \\       coverage_type,
+        \\       status,
+        \\       priority,
+        \\       last_contacted,
+        \\       days_since_contact,
+        \\       followup_status
+        \\  FROM mentor_coverage_planner.followup_queue;
     },
 };
 
@@ -92,26 +146,27 @@ const Config = struct {
 
 fn usage(writer: anytype) !void {
     try writer.writeAll(
-        \\""\
-mentor-coverage-planner
-
-Usage:
-  mentor-coverage-planner <command>
-
-Commands:
-  list-mentors       List active mentors and weekly capacity.
-  list-blocks        List coverage blocks by day/time.
-  assignments        List current mentor assignments.
-  coverage-summary   Summarize confirmed vs pending coverage.
-
-Environment variables:
-  GS_DB_HOST       (default: db-acupinir.groupscholar.com)
-  GS_DB_PORT       (default: 23947)
-  GS_DB_USER       (default: ralph)
-  GS_DB_PASSWORD   (required)
-  GS_DB_NAME       (default: postgres)
-  GS_DB_SSLMODE    (default: require)
-        \\""\
+        \\mentor-coverage-planner
+        \\
+        \\Usage:
+        \\  mentor-coverage-planner <command>
+        \\
+        \\Commands:
+        \\  list-mentors       List active mentors and weekly capacity.
+        \\  list-blocks        List coverage blocks by day/time.
+        \\  assignments        List current mentor assignments.
+        \\  coverage-summary   Summarize confirmed vs pending coverage.
+        \\  coverage-gaps      Show blocks with remaining confirmed gaps.
+        \\  followup-queue     Show pending/proposed assignments needing outreach.
+        \\  mentor-load        Summarize confirmed vs pending load by mentor.
+        \\
+        \\Environment variables:
+        \\  GS_DB_HOST       (default: db-acupinir.groupscholar.com)
+        \\  GS_DB_PORT       (default: 23947)
+        \\  GS_DB_USER       (default: ralph)
+        \\  GS_DB_PASSWORD   (required)
+        \\  GS_DB_NAME       (default: postgres)
+        \\  GS_DB_SSLMODE    (default: require)
     );
 }
 
@@ -256,4 +311,20 @@ test "connectionString builds expected format" {
     const conn = try connectionString(alloc, cfg);
     defer alloc.free(conn);
     try std.testing.expect(std.mem.eql(u8, conn, "host=host port=5432 user=user dbname=db sslmode=require"));
+}
+
+test "findQuery locates followup queue" {
+    const query = findQuery("followup-queue") orelse return error.TestUnexpectedResult;
+    try std.testing.expect(std.mem.eql(u8, query.name, "followup-queue"));
+    try std.testing.expect(std.mem.containsAtLeast(u8, query.sql, 1, "followup_queue"));
+}
+
+test "findQuery locates coverage gaps" {
+    const query = findQuery("coverage-gaps") orelse return error.TestExpectedEqual;
+    try std.testing.expect(std.mem.eql(u8, query.name, "coverage-gaps"));
+}
+
+test "findQuery locates followup queue" {
+    const query = findQuery("followup-queue") orelse return error.TestExpectedEqual;
+    try std.testing.expect(std.mem.eql(u8, query.name, "followup-queue"));
 }

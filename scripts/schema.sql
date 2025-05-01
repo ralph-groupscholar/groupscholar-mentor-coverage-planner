@@ -51,3 +51,63 @@ SELECT b.day_of_week,
   LEFT JOIN mentor_coverage_planner.assignments a ON a.block_id = b.id
  GROUP BY b.day_of_week, b.start_time, b.end_time, b.total_needed
  ORDER BY b.day_of_week, b.start_time;
+
+CREATE OR REPLACE VIEW mentor_coverage_planner.coverage_gaps AS
+SELECT day_of_week,
+       day_label,
+       start_time,
+       end_time,
+       total_needed,
+       confirmed_count,
+       pending_count,
+       GREATEST(total_needed - confirmed_count, 0) AS remaining_needed,
+       CASE
+            WHEN total_needed = 0 THEN 0
+            ELSE ROUND((confirmed_count::numeric / total_needed) * 100, 1)
+       END AS confirmed_pct,
+       CASE
+            WHEN total_needed - confirmed_count <= 0 THEN 'Covered'
+            WHEN pending_count = 0 THEN 'Unassigned'
+            ELSE 'Needs Follow-up'
+       END AS gap_status
+  FROM mentor_coverage_planner.coverage_summary
+ ORDER BY day_of_week, start_time;
+
+CREATE OR REPLACE VIEW mentor_coverage_planner.followup_queue AS
+SELECT m.full_name AS mentor,
+       CASE b.day_of_week
+            WHEN 0 THEN 'Sun'
+            WHEN 1 THEN 'Mon'
+            WHEN 2 THEN 'Tue'
+            WHEN 3 THEN 'Wed'
+            WHEN 4 THEN 'Thu'
+            WHEN 5 THEN 'Fri'
+            WHEN 6 THEN 'Sat'
+       END AS day,
+       to_char(b.start_time, 'HH24:MI') AS start_time,
+       to_char(b.end_time, 'HH24:MI') AS end_time,
+       b.coverage_type,
+       a.status,
+       a.priority,
+       a.last_contacted,
+       COALESCE((CURRENT_DATE - a.last_contacted), 999) AS days_since_contact,
+       CASE
+            WHEN a.last_contacted IS NULL THEN 'Needs outreach'
+            WHEN (CURRENT_DATE - a.last_contacted) >= 7 THEN 'Overdue'
+            WHEN (CURRENT_DATE - a.last_contacted) >= 3 THEN 'Follow-up'
+            ELSE 'Recent'
+       END AS followup_status
+  FROM mentor_coverage_planner.assignments a
+  JOIN mentor_coverage_planner.mentors m ON m.id = a.mentor_id
+  JOIN mentor_coverage_planner.coverage_blocks b ON b.id = a.block_id
+ WHERE a.status IN ('pending', 'proposed')
+ ORDER BY
+       CASE
+            WHEN a.last_contacted IS NULL THEN 3
+            WHEN (CURRENT_DATE - a.last_contacted) >= 7 THEN 2
+            WHEN (CURRENT_DATE - a.last_contacted) >= 3 THEN 1
+            ELSE 0
+       END DESC,
+       days_since_contact DESC,
+       a.priority DESC,
+       m.full_name;

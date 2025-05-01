@@ -23,6 +23,6 @@ VALUES
     (1, 1, 'confirmed', 3, CURRENT_DATE - INTERVAL '4 days'),
     (2, 1, 'pending', 2, CURRENT_DATE - INTERVAL '2 days'),
     (3, 2, 'confirmed', 2, CURRENT_DATE - INTERVAL '7 days'),
-    (4, 2, 'proposed', 1, CURRENT_DATE - INTERVAL '1 day'),
+    (4, 2, 'proposed', 1, NULL),
     (1, 4, 'confirmed', 2, CURRENT_DATE - INTERVAL '5 days'),
     (2, 5, 'pending', 1, CURRENT_DATE - INTERVAL '3 days');
