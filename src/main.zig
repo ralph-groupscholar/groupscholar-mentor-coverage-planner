@@ -119,19 +119,18 @@ const queries = [_]Query{
         \\ ORDER BY remaining_capacity DESC, m.full_name;
     },
     .{
-        .name = "followup-queue",
+        .name = "mentor-capacity",
         .sql =
         \\SELECT mentor,
-        \\       day,
-        \\       start_time,
-        \\       end_time,
-        \\       coverage_type,
-        \\       status,
-        \\       priority,
-        \\       last_contacted,
-        \\       days_since_contact,
-        \\       followup_status
-        \\  FROM mentor_coverage_planner.followup_queue;
+        \\       max_sessions_per_week,
+        \\       confirmed_assignments,
+        \\       pending_assignments,
+        \\       proposed_assignments,
+        \\       total_assignments,
+        \\       remaining_capacity,
+        \\       utilization_pct,
+        \\       capacity_status
+        \\  FROM mentor_coverage_planner.mentor_capacity;
     },
 };
 
@@ -159,6 +158,7 @@ fn usage(writer: anytype) !void {
         \\  coverage-gaps      Show blocks with remaining confirmed gaps.
         \\  followup-queue     Show pending/proposed assignments needing outreach.
         \\  mentor-load        Summarize confirmed vs pending load by mentor.
+        \\  mentor-capacity    Show utilization and capacity status by mentor.
         \\
         \\Environment variables:
         \\  GS_DB_HOST       (default: db-acupinir.groupscholar.com)
@@ -324,7 +324,7 @@ test "findQuery locates coverage gaps" {
     try std.testing.expect(std.mem.eql(u8, query.name, "coverage-gaps"));
 }
 
-test "findQuery locates followup queue" {
-    const query = findQuery("followup-queue") orelse return error.TestExpectedEqual;
-    try std.testing.expect(std.mem.eql(u8, query.name, "followup-queue"));
+test "findQuery locates mentor capacity" {
+    const query = findQuery("mentor-capacity") orelse return error.TestExpectedEqual;
+    try std.testing.expect(std.mem.eql(u8, query.name, "mentor-capacity"));
 }

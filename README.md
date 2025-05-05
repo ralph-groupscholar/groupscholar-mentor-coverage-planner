@@ -9,6 +9,7 @@ A Zig CLI that tracks mentor coverage blocks, assignments, and weekly gaps for G
 - Surface coverage gaps with fill rate and follow-up status.
 - Inspect current mentor assignments.
 - Track mentor load vs weekly capacity.
+- Monitor mentor utilization and capacity status.
 - Prioritize pending/proposed assignments that need outreach.
 
 ## Tech Stack
@@ -36,6 +37,7 @@ Other commands:
 GS_DB_PASSWORD=... zig build run -- coverage-gaps
 GS_DB_PASSWORD=... zig build run -- mentor-load
 GS_DB_PASSWORD=... zig build run -- followup-queue
+GS_DB_PASSWORD=... zig build run -- mentor-capacity
 ```
 
 ### Environment Variables

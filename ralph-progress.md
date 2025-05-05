@@ -1,5 +1,10 @@
 # Ralph Progress Log
 
+## Iteration 152
+- Added mentor capacity view with utilization and status flags.
+- Exposed mentor-capacity CLI command and updated tests.
+- Updated documentation to cover the new capacity command.
+
 ## Iteration 48
 - Created Zig CLI skeleton with mentor coverage commands.
 - Added Postgres schema, seed data, and coverage summary view.
