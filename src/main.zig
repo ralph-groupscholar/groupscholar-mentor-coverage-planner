@@ -132,6 +132,24 @@ const queries = [_]Query{
         \\       capacity_status
         \\  FROM mentor_coverage_planner.mentor_capacity;
     },
+    .{
+        .name = "block-priority",
+        .sql =
+        \\SELECT day_label AS day,
+        \\       start_time,
+        \\       end_time,
+        \\       coverage_type,
+        \\       total_needed,
+        \\       confirmed_count,
+        \\       pending_count,
+        \\       remaining_needed,
+        \\       overdue_contacts,
+        \\       followup_needed,
+        \\       gap_pct,
+        \\       priority_status,
+        \\       priority_score
+        \\  FROM mentor_coverage_planner.block_priority;
+    },
 };
 
 const Config = struct {
@@ -159,6 +177,7 @@ fn usage(writer: anytype) !void {
         \\  followup-queue     Show pending/proposed assignments needing outreach.
         \\  mentor-load        Summarize confirmed vs pending load by mentor.
         \\  mentor-capacity    Show utilization and capacity status by mentor.
+        \\  block-priority     Rank blocks by gap severity and outreach risk.
         \\
         \\Environment variables:
         \\  GS_DB_HOST       (default: db-acupinir.groupscholar.com)
@@ -327,4 +346,10 @@ test "findQuery locates coverage gaps" {
 test "findQuery locates mentor capacity" {
     const query = findQuery("mentor-capacity") orelse return error.TestExpectedEqual;
     try std.testing.expect(std.mem.eql(u8, query.name, "mentor-capacity"));
+}
+
+test "findQuery locates block priority" {
+    const query = findQuery("block-priority") orelse return error.TestExpectedEqual;
+    try std.testing.expect(std.mem.eql(u8, query.name, "block-priority"));
+    try std.testing.expect(std.mem.containsAtLeast(u8, query.sql, 1, "block_priority"));
 }

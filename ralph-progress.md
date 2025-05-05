@@ -1,9 +1,9 @@
 # Ralph Progress Log
 
 ## Iteration 152
-- Added mentor capacity view with utilization and status flags.
-- Exposed mentor-capacity CLI command and updated tests.
-- Updated documentation to cover the new capacity command.
+- Added block_priority view with gap and outreach risk scoring.
+- Exposed block-priority CLI command and tests.
+- Expanded seed data to highlight higher risk blocks.
 
 ## Iteration 48
 - Created Zig CLI skeleton with mentor coverage commands.
